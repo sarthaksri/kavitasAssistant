@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-const { getFin,
-  getQuality,
-  getTarget } = require("../controllers/workerscontroller");
+const { getFinLLM,
+  getQualityLLM,
+  getTargetLLM } = require("../controllers/workerscontroller");
 
 // POST /workers
 router.post("/finance", getFin);

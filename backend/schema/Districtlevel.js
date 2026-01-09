@@ -26,12 +26,23 @@ const DistrictLevelSchema = new mongoose.Schema(
       trim: true
     },
 
+    // 🔹 Package-level financials (₹ crore)
+    packagebudget: {
+      type: Number,
+      required: true
+    },
+
+    packagevop: {
+      type: Number,
+      default: 0
+    },
+
     roadlength: {
       type: Number, // km
       required: true
     },
 
-    // 🔹 Monthly target (Apr–Mar → index 0–11)
+    // 🔹 Monthly target (Apr–Mar)
     monthlytarget: {
       type: [Number],
       validate: {
@@ -43,7 +54,7 @@ const DistrictLevelSchema = new mongoose.Schema(
       default: Array(12).fill(0)
     },
 
-    // 🔹 Monthly completed (Apr–Mar → index 0–11)
+    // 🔹 Monthly completed (Apr–Mar)
     monthlycompleted: {
       type: [Number],
       validate: {

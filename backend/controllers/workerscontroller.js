@@ -4,7 +4,7 @@ const StateLevel = require("../schema/Statelevel");
  * POST /workers
  * Fetch financial + physical summary (State Level)
  */
-exports.getFin = async (req, res) => {
+exports.getFinLLM = async (req, res) => {
   try {
     
   } catch (error) {
@@ -16,7 +16,7 @@ exports.getFin = async (req, res) => {
  * GET QUALITY STATUS (SQM + NQM)
  * Route: /workers/quality
  */
-exports.getQuality = async (req, res) => {
+exports.getQualityLLM = async (req, res) => {
   try {
     
   } catch (error) {
@@ -28,7 +28,7 @@ exports.getQuality = async (req, res) => {
  * GET TARGET vs COMPLETION (MONTHLY + CUMULATIVE)
  * Route: /workers/target
  */
-exports.getTarget = async (req, res) => {
+exports.getTargetLLM = async (req, res) => {
   try {
     
   } catch (error) {
