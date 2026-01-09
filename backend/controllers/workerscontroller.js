@@ -250,3 +250,89 @@ exports.getTargetLLM = async (req, res) => {
     });
   }
 };
+
+
+/**
+ * GET pending complaints 
+ * Route: /workers/complaint
+ */
+exports.getComplaintLLM = async (req, res) => {
+  try {
+    const { state } = req.body;
+
+    if (!state) {
+      return res.status(400).json({
+        success: false,
+        message: "State is required in request body"
+      });
+    }
+
+    // 1. Fetch relevant fields
+    const districts = await DistrictLevel.find(
+      { state },
+      {
+        district: 1,
+        packagenumber: 1,
+        complaintspending: 1
+      }
+    );
+
+    if (districts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No complaint data found for the given state"
+      });
+    }
+
+    // 2. Aggregate data and find the maximum
+    let totalStateComplaints = 0;
+    let maxComplaintVal = -1;
+    let worstDistrict = "";
+
+    const districtData = districts.map(d => {
+      const pending = d.complaintspending || 0;
+      totalStateComplaints += pending;
+
+      if (pending > maxComplaintVal) {
+        maxComplaintVal = pending;
+        worstDistrict = d.district;
+      }
+
+      return {
+        district: d.district,
+        package: d.packagenumber,
+        pending
+      };
+    });
+
+    // 3. Logic for Alert Message (Threshold: 25)
+    const THRESHOLD = 25;
+    let alertMessage = `The state of ${state} currently has a total of ${totalStateComplaints} pending complaints. `;
+    
+    if (maxComplaintVal > THRESHOLD) {
+      alertMessage += `CRITICAL ALERT: District '${worstDistrict}' has exceeded the threshold with ${maxComplaintVal} pending complaints. Immediate intervention is required for package ${districts.find(d => d.district === worstDistrict).packagenumber}.`;
+    } else {
+      alertMessage += `Status: Complaint levels are within manageable limits across all districts.`;
+    }
+
+    // 4. Send Response
+    res.status(200).json({
+      success: true,
+      state,
+      summary: {
+        totalComplaints: totalStateComplaints,
+        maxPendingInOneDistrict: maxComplaintVal,
+        mostAffectedDistrict: worstDistrict,
+        llmAlertPrompt: alertMessage // This string can be passed directly to your LLM
+      },
+      details: districtData
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving complaint data",
+      error: error.message
+    });
+  }
+};
