@@ -78,98 +78,97 @@ exports.getFinLLM = async (req, res) => {
  */
 exports.getQualityLLM = async (req, res) => {
   try {
-    const { state } = req.params;
+    // 1. Get state from body (as per your getFinLLM pattern)
+    const { state } = req.body;
 
-    const data = await DistrictLevel.aggregate([
-      { $match: { state } },
+    if (!state) {
+      return res.status(400).json({
+        success: false,
+        message: "State is required in request body"
+      });
+    }
 
+    // 2. Fetch raw data
+    const records = await DistrictLevel.find(
+      { state },
       {
-        $group: {
-          _id: "$district",
-
-          totalSQM: { $sum: "$sqmcount" },
-          totalNQM: { $sum: "$nqmcount" },
-
-          sqmFail: {
-            $sum: {
-              $cond: [{ $eq: ["$sqmquality", "unsatisfactory"] }, "$sqmcount", 0]
-            }
-          },
-
-          nqmFail: {
-            $sum: {
-              $cond: [{ $eq: ["$nqmquality", "unsatisfactory"] }, "$nqmcount", 0]
-            }
-          }
-        }
-      },
-
-      {
-        $project: {
-          district: "$_id",
-          _id: 0,
-
-          sqmPercentage: {
-            $cond: [
-              { $eq: ["$totalSQM", 0] },
-              0,
-              { $multiply: [{ $divide: ["$sqmFail", "$totalSQM"] }, 100] }
-            ]
-          },
-
-          nqmPercentage: {
-            $cond: [
-              { $eq: ["$totalNQM", 0] },
-              0,
-              { $multiply: [{ $divide: ["$nqmFail", "$totalNQM"] }, 100] }
-            ]
-          },
-
-          totalSQM: 1,
-          totalNQM: 1,
-          sqmFail: 1,
-          nqmFail: 1
-        }
+        district: 1,
+        sqmcount: 1,
+        nqmcount: 1,
+        sqmquality: 1,
+        nqmquality: 1
       }
-    ]);
+    );
 
-    // 🔹 Calculate state totals
-    let stateSQM = 0,
-        stateSQMFail = 0,
-        stateNQM = 0,
-        stateNQMFail = 0;
+    if (records.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No quality data found for the given state"
+      });
+    }
 
-    data.forEach(d => {
-      stateSQM += d.totalSQM;
-      stateSQMFail += d.sqmFail;
-      stateNQM += d.totalNQM;
-      stateNQMFail += d.nqmFail;
+    // 3. Process data (Grouping by district manually)
+    const districtMap = {};
+    let stateSQM = 0, stateSQMFail = 0, stateNQM = 0, stateNQMFail = 0;
+
+    records.forEach(rec => {
+      const dist = rec.district;
+      if (!districtMap[dist]) {
+        districtMap[dist] = { totalSQM: 0, sqmFail: 0, totalNQM: 0, nqmFail: 0 };
+      }
+
+      const sCount = rec.sqmcount || 0;
+      const nCount = rec.nqmcount || 0;
+
+      // Update District totals
+      districtMap[dist].totalSQM += sCount;
+      districtMap[dist].totalNQM += nCount;
+      if (rec.sqmquality === "unsatisfactory") districtMap[dist].sqmFail += sCount;
+      if (rec.nqmquality === "unsatisfactory") districtMap[dist].nqmFail += nCount;
+
+      // Update State totals
+      stateSQM += sCount;
+      stateNQM += nCount;
+      if (rec.sqmquality === "unsatisfactory") stateSQMFail += sCount;
+      if (rec.nqmquality === "unsatisfactory") stateNQMFail += nCount;
     });
 
+    // 4. Format District Results
+    const districtResults = Object.keys(districtMap).map(distName => {
+      const d = districtMap[distName];
+      return {
+        district: distName,
+        sqmPercentage: d.totalSQM === 0 ? 0 : Number(((d.sqmFail / d.totalSQM) * 100).toFixed(2)),
+        nqmPercentage: d.totalNQM === 0 ? 0 : Number(((d.nqmFail / d.totalNQM) * 100).toFixed(2))
+      };
+    });
+
+    // 5. Calculate State percentages and status
     const sqmPercent = stateSQM === 0 ? 0 : (stateSQMFail / stateSQM) * 100;
     const nqmPercent = stateNQM === 0 ? 0 : (stateNQMFail / stateNQM) * 100;
 
-    res.json({
+    res.status(200).json({
+      success: true,
       state,
       stateQuality: {
         sqm: {
-          percentage: +sqmPercent.toFixed(2),
+          percentage: Number(sqmPercent.toFixed(2)),
           status: sqmPercent > 20 ? "unsatisfactory" : "satisfactory"
         },
         nqm: {
-          percentage: +nqmPercent.toFixed(2),
+          percentage: Number(nqmPercent.toFixed(2)),
           status: nqmPercent > 20 ? "unsatisfactory" : "satisfactory"
         }
       },
-      districts: data.map(d => ({
-        district: d.district,
-        sqmPercentage: +d.sqmPercentage.toFixed(2),
-        nqmPercentage: +d.nqmPercentage.toFixed(2)
-      }))
+      districts: districtResults
     });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error calculating quality metrics",
+      error: error.message
+    });
   }
 };
 
