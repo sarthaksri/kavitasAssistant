@@ -23,8 +23,7 @@ Rules:
 Warning patterns to detect:
 - Overspending or low value-for-money
 - Physical progress lagging behind targets
-- Quality failures across districts
-- Repeated inspection failures
+- Quality inspection failures
 - High number of unresolved complaints
 
 Input data:
@@ -32,8 +31,20 @@ Input data:
 Financial:
 ${JSON.stringify(finance)}
 
-Quality:
+Quality inspection status:
+
+Definitions:
+- SQM = State Quality Monitor inspections
+- NQM = National Quality Monitor inspections
+- Failure means inspection marked as "unsatisfactory"
+
+Quality data:
 ${JSON.stringify(quality)}
+
+Quality warning rules:
+- Evaluate SQM and NQM separately
+- Each warning must clearly mention SQM or NQM
+- If no quality issue exists, return an empty array
 
 Target:
 ${JSON.stringify(target)}
