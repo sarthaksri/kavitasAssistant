@@ -38,7 +38,7 @@ exports.getStateSummaryLLM = async (req, res) => {
 
     // ---------- Quality ----------
     const qual = captureResponse();
-    await workersController.getQualityLLM({ params: { state } }, qual.res);
+    await workersController.getQualityLLM({ body: { state } }, qual.res);
     const qualityData = qual.getData();
 
     // ---------- Target ----------
@@ -46,12 +46,18 @@ exports.getStateSummaryLLM = async (req, res) => {
     await workersController.getTargetLLM({ body: { state } }, targ.res);
     const targetData = targ.getData();
 
+    // ---------- Complaints ----------
+    const comp = captureResponse();
+    await workersController.getComplaintLLM({ body: { state } }, comp.res);
+    const complaintsData = comp.getData();
+
     // ---------- Gemini ----------
     const prompt = buildStatePrompt(
       state,
       financeData,
       qualityData,
-      targetData
+      targetData,
+      complaintsData
     );
 
     const summary = await generateSummary(prompt);
@@ -69,4 +75,3 @@ exports.getStateSummaryLLM = async (req, res) => {
     });
   }
 };
-
