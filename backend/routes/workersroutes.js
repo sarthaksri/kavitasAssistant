@@ -6,8 +6,8 @@ const { getFinLLM,
   getTargetLLM } = require("../controllers/workerscontroller");
 
 // POST /workers
-router.post("/finance", getFin);
-router.post("/quality", getQuality);
-router.post("/target", getTarget);
+router.post("/finance", getFinLLM);
+router.post("/quality", getQualityLLM);
+router.post("/target", getTargetLLM);
 
 module.exports = router;
