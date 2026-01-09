@@ -3,11 +3,13 @@ const router = express.Router();
 
 const { getFinLLM,
   getQualityLLM,
-  getTargetLLM } = require("../controllers/workerscontroller");
+  getTargetLLM,
+  getComplaintLLM } = require("../controllers/workerscontroller");
 
 // POST /workers
-router.post("/finance", getFin);
-router.post("/quality", getQuality);
-router.post("/target", getTarget);
+router.post("/finance", getFinLLM);
+router.post("/quality", getQualityLLM);
+router.post("/target", getTargetLLM);
+router.post("/complaint", getComplaintLLM);
 
 module.exports = router;
