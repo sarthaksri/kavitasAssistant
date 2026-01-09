@@ -27,7 +27,7 @@ const DistrictLevelSchema = new mongoose.Schema(
     },
 
     // 🔹 Package-level financials (₹ crore)
-    packagebudget: {
+    packageutilised: {
       type: Number,
       required: true
     },
