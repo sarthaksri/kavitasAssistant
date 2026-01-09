@@ -1,8 +1,9 @@
 const { generateSummary } = require("../utils/gemini");
 const { buildStateSummaryPrompt } = require("../utils/prompts");
 const workersController = require("./workerscontroller");
+const StateSummary = require("../schema/StateSummary");
 
-// Helper to capture res.json output without changing existing controllers
+// Helper to capture res.json output
 function captureResponse() {
   let data;
   return {
@@ -62,10 +63,21 @@ exports.getStateSummaryLLM = async (req, res) => {
 
     const summary = JSON.parse(await generateSummary(prompt));
 
+    // ---------- UPSERT INTO MONGO ----------
+    const savedSummary = await StateSummary.findOneAndUpdate(
+      { state },
+      { summary },
+      {
+        new: true,      // return updated document
+        upsert: true    // insert if not exists
+      }
+    );
+
     return res.json({
       success: true,
       state,
-      summary
+      summary: savedSummary.summary,
+      updatedAt: savedSummary.updatedAt
     });
 
   } catch (error) {

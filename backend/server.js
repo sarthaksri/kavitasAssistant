@@ -23,6 +23,8 @@ app.use((_req,res,next)=>{
   app.use("/workers", workersRoutes);
   const dataIngestionRoutes = require("./routes/dataingestion");
   app.use("/ingest", dataIngestionRoutes);
+  const getDataRoutes = require("./routes/getdata");
+  app.use("/getdata", getDataRoutes);
 
   app.get("/",(req,res)=>{
     return res.json({

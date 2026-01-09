@@ -7,7 +7,7 @@ Generate ONLY warning signals for the state: ${state}.
 
 For EACH parameter (finance, quality, target, complaints), generate:
 1. A short ONE-LINE warning
-2. A DETAILED warning including key numbers
+2. A DETAILED warning including all the relevant data points
 
 Input data contains:
 - Financial status
