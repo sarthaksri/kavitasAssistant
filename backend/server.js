@@ -21,7 +21,8 @@ app.use((_req,res,next)=>{
 
   const workersRoutes = require("./routes/workersroutes");
   app.use("/workers", workersRoutes);
-
+  const dataIngestionRoutes = require("./routes/dataingestion");
+  app.use("/ingest", dataIngestionRoutes);
 
   app.get("/",(req,res)=>{
     return res.json({
