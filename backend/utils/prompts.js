@@ -43,8 +43,6 @@ ${JSON.stringify(quality)}
 
 Quality warning rules:
 - Evaluate SQM and NQM separately
-- If SQM failurePercentage > 20%, generate an SQM warning
-- If NQM failurePercentage > 20%, generate an NQM warning
 - Each warning must clearly mention SQM or NQM
 - If no quality issue exists, return an empty array
 

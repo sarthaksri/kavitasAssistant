@@ -1,5 +1,5 @@
 const { generateSummary } = require("../utils/gemini");
-const { buildStatePrompt } = require("../utils/prompts");
+const { buildStateSummaryPrompt } = require("../utils/prompts");
 const workersController = require("./workerscontroller");
 
 // Helper to capture res.json output without changing existing controllers
@@ -52,7 +52,7 @@ exports.getStateSummaryLLM = async (req, res) => {
     const complaintsData = comp.getData();
 
     // ---------- Gemini ----------
-    const prompt = buildStatePrompt(
+    const prompt = buildStateSummaryPrompt(
       state,
       financeData,
       qualityData,
@@ -60,7 +60,7 @@ exports.getStateSummaryLLM = async (req, res) => {
       complaintsData
     );
 
-    const summary = await generateSummary(prompt);
+    const summary = JSON.parse(await generateSummary(prompt));
 
     return res.json({
       success: true,
