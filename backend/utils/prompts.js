@@ -5,6 +5,10 @@ You are an intelligent alert engine for a senior government dashboard.
 Task:
 Generate ONLY warning signals for the state: ${state}.
 
+For EACH parameter (finance, quality, target, complaints), generate:
+1. A short ONE-LINE warning
+2. A DETAILED warning including key numbers
+
 Input data contains:
 - Financial status
 - Quality inspection status
@@ -13,18 +17,17 @@ Input data contains:
 
 Rules:
 - Output ONLY valid JSON
-- No summary, no explanation
-- Each warning must be ONE short sentence
-- Use simple language suitable for senior officers
+- No explanation outside JSON
+- Language must be simple and suitable for senior officers
 - Focus only on issues needing attention
 - No emojis, no headings
-- If no issue exists for a metric, return an empty array []
+- If no issue exists for a parameter, return empty strings "" for both fields
 
-Warning patterns to detect:
-- Overspending or low value-for-money
-- Physical progress lagging behind targets
-- Quality inspection failures
-- High number of unresolved complaints
+Warning patterns:
+- Financial: overspending or low value-for-money
+- Quality: SQM or NQM inspection failures
+- Target: physical progress lagging behind targets
+- Complaints: high number of unresolved complaints
 
 Input data:
 
@@ -41,11 +44,6 @@ Definitions:
 Quality data:
 ${JSON.stringify(quality)}
 
-Quality warning rules:
-- Evaluate SQM and NQM separately
-- Each warning must clearly mention SQM or NQM
-- If no quality issue exists, return an empty array
-
 Target:
 ${JSON.stringify(target)}
 
@@ -56,11 +54,23 @@ Output format (STRICT, DO NOT CHANGE):
 
 {
   "state": "${state}",
-  "data": {
-    "fin": [],
-    "qual": [],
-    "target": [],
-    "complaints": []
+  "alerts": {
+    "finance": {
+      "oneLine": "",
+      "detailed": ""
+    },
+    "quality": {
+      "oneLine": "",
+      "detailed": ""
+    },
+    "target": {
+      "oneLine": "",
+      "detailed": ""
+    },
+    "complaints": {
+      "oneLine": "",
+      "detailed": ""
+    }
   }
 }
 `;
