@@ -19,6 +19,10 @@ app.use((_req,res,next)=>{
     credentials:true
   }))
 
+  const workersRoutes = require("./routes/workersroutes");
+  app.use("/workers", workersRoutes);
+
+
   app.get("/",(req,res)=>{
     return res.json({
         success:true,
@@ -26,10 +30,6 @@ app.use((_req,res,next)=>{
     })
   })
 
-// const auth = require('./routes/auth.js');
-// app.use("/auth", auth);
-// const manage = require("./routes/manage.js");
-// app.use("/manage", manage);
 app.listen(port, function() {
     console.log("Server is running on port " + port);
 });
