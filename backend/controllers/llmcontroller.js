@@ -1,5 +1,5 @@
 const { generateSummary } = require("../utils/gemini");
-const { buildStatePrompt } = require("../utils/prompts");
+const { buildStateSummaryPrompt } = require("../utils/prompts");
 const workersController = require("./workerscontroller");
 
 // Helper to capture res.json output without changing existing controllers
@@ -47,7 +47,7 @@ exports.getStateSummaryLLM = async (req, res) => {
     const targetData = targ.getData();
 
     // ---------- Gemini ----------
-    const prompt = buildStatePrompt(
+    const prompt = buildStateSummaryPrompt(
       state,
       financeData,
       qualityData,
