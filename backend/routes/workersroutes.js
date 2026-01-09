@@ -1,13 +1,19 @@
 const express = require("express");
 const router = express.Router();
 
-const { getFinLLM,
+const {
+  getFinLLM,
   getQualityLLM,
-  getTargetLLM } = require("../controllers/workerscontroller");
+  getTargetLLM
+} = require("../controllers/workerscontroller");
 
-// POST /workers
-router.post("/finance", getFin);
-router.post("/quality", getQuality);
-router.post("/target", getTarget);
+const { getStateSummaryLLM } = require("../controllers/llmcontroller");
+
+router.post("/finance", getFinLLM);
+router.post("/quality", getQualityLLM);
+router.post("/target", getTargetLLM);
+
+
+router.post("/summary", getStateSummaryLLM);
 
 module.exports = router;
