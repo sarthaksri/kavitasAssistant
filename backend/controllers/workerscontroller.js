@@ -179,8 +179,75 @@ exports.getQualityLLM = async (req, res) => {
  */
 exports.getTargetLLM = async (req, res) => {
   try {
-    
+    const { state } = req.body;
+
+    if (!state) {
+      return res.status(400).json({
+        success: false,
+        message: "State is required in request body"
+      });
+    }
+
+    const packages = await DistrictLevel.find(
+      { state },
+      {
+        district: 1,
+        packagenumber: 1,
+        monthlytarget: 1,
+        monthlycompleted: 1
+      }
+    );
+
+    if (packages.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No packages found for given state"
+      });
+    }
+
+    const result = packages
+      .map(pkg => {
+        const totalTarget = (pkg.monthlytarget || []).reduce(
+          (a, b) => a + b,
+          0
+        );
+        const totalCompleted = (pkg.monthlycompleted || []).reduce(
+          (a, b) => a + b,
+          0
+        );
+
+        const achievement =
+          totalTarget > 0
+            ? Number((totalCompleted / totalTarget).toFixed(2))
+            : 0;
+
+        var meaning = "good";
+        if (achievement < 0.6) meaning = "critical";
+        else if (achievement < 0.8) meaning = "moderate";
+
+        return {
+          district: pkg.district,
+          packagenumber: pkg.packagenumber,
+          totalTarget,
+          totalCompleted,
+          achievement,
+          meaning
+        };
+      })
+      // only return moderate + critical
+      .filter(pkg => pkg.meaning !== "good");
+
+    res.status(200).json({
+      success: true,
+      state,
+      totalFlaggedPackages: result.length,
+      data: result
+    });
   } catch (error) {
-    
+    res.status(500).json({
+      success: false,
+      message: "Error analyzing target achievement",
+      error: error.message
+    });
   }
 };

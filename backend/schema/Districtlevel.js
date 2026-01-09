@@ -37,6 +37,11 @@ const DistrictLevelSchema = new mongoose.Schema(
       default: 0
     },
 
+    complaintspending: {
+      type: Number,
+      default: 0
+    },
+
     roadlength: {
       type: Number, // km
       required: true
