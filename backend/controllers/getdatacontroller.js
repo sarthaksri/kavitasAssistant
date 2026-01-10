@@ -69,3 +69,68 @@ exports.getStateDashboardData = async (req, res) => {
     });
   }
 };
+
+/**
+ * Generic helper to fetch detailed alert
+ */
+const getDetailedAlert = async (req, res, alertType) => {
+  try {
+    const { state } = req.body;
+
+    if (!state) {
+      return res.status(400).json({
+        success: false,
+        message: "State is required"
+      });
+    }
+
+    const summaryDoc = await StateSummary.findOne({ state }).lean();
+
+    if (!summaryDoc) {
+      return res.status(404).json({
+        success: false,
+        message: "Summary not found for state"
+      });
+    }
+
+    const detailed =
+      summaryDoc.summary?.alerts?.[alertType]?.detailed;
+
+    return res.json({
+      success: true,
+      state,
+      type: alertType,
+      detailed: detailed || ""
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+/**
+ * POST /getdata/detailed/finance
+ */
+exports.getDetailedFinance = (req, res) =>
+  getDetailedAlert(req, res, "finance");
+
+/**
+ * POST /getdata/detailed/quality
+ */
+exports.getDetailedQuality = (req, res) =>
+  getDetailedAlert(req, res, "quality");
+
+/**
+ * POST /getdata/detailed/target
+ */
+exports.getDetailedTarget = (req, res) =>
+  getDetailedAlert(req, res, "target");
+
+/**
+ * POST /getdata/detailed/complaints
+ */
+exports.getDetailedComplaints = (req, res) =>
+  getDetailedAlert(req, res, "complaints");
